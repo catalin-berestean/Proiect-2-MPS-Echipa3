@@ -45,7 +45,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseMessage> registration(@RequestBody @Valid User user) {
+    public ResponseEntity<User> registration(@RequestBody @Valid User user) {
         // we save the password because save method encodes the password
         String decodedPassword = user.getPassword();
         String passwordConfirm = user.getPasswordConfirm();
@@ -57,9 +57,9 @@ public class AuthenticationController {
         if (userService.findByUsername(user.getUsername()).isPresent()) {
             throw new ConflictException("Username is already taken");
         }
-        Optional<Organization> orgFromDb = organizationRepository.findById(user.getOrganization().getId());
+        Optional<Organization> orgFromDb = organizationRepository.findByName(user.getOrganization().getName());
         if(orgFromDb.isEmpty()) {
-            throw new ResourceNotFoundException("Organization with id " + user.getOrganization().getId() + " does not exist");
+            throw new ResourceNotFoundException("Organization with name " + user.getOrganization().getName() + " does not exist");
         }
 
         user.setOrganization(orgFromDb.get());
@@ -68,7 +68,11 @@ public class AuthenticationController {
         userService.save(user);
         // we send the decoded password to autologin method
         securityService.autoLogin(user.getUsername(), decodedPassword);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("Registration successful"));
+        User userToClient = new User();
+        userToClient.setRole(Role.VIEW.name());
+        userToClient.setOrganization(orgFromDb.get());
+        userToClient.setUsername(user.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(userToClient);
     }
 
     @GetMapping("/me/logout")
