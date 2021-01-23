@@ -2,8 +2,12 @@ package com.mps.project.api.controller;
 
 import com.mps.project.api.exceptions.ConflictException;
 import com.mps.project.api.exceptions.PasswordRegisterException;
+import com.mps.project.api.exceptions.ResourceNotFoundException;
 import com.mps.project.api.exceptions.ResponseMessage;
+import com.mps.project.api.model.Organization;
+import com.mps.project.api.model.Role;
 import com.mps.project.api.model.User;
+import com.mps.project.api.repository.OrganizationRepository;
 import com.mps.project.api.service.SecurityService;
 import com.mps.project.api.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +24,9 @@ import java.util.Optional;
 
 @RestController
 public class AuthenticationController {
+
+    @Autowired
+    private OrganizationRepository organizationRepository;
 
     @Autowired
     private UserService userService;
@@ -50,6 +57,13 @@ public class AuthenticationController {
         if (userService.findByUsername(user.getUsername()).isPresent()) {
             throw new ConflictException("Username is already taken");
         }
+        Optional<Organization> orgFromDb = organizationRepository.findById(user.getOrganization().getId());
+        if(orgFromDb.isEmpty()) {
+            throw new ResourceNotFoundException("Organization with id " + user.getOrganization().getId() + " does not exist");
+        }
+
+        user.setOrganization(orgFromDb.get());
+        user.setRole(Role.VIEW.name());
 
         userService.save(user);
         // we send the decoded password to autologin method

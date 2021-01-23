@@ -1,4 +1,7 @@
 package com.mps.project.api.controller;
-//TODO
+
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
 public class UserController {
 }

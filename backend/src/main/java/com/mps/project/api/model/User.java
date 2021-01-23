@@ -1,6 +1,11 @@
 package com.mps.project.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.aspectj.weaver.ast.Or;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -25,10 +30,53 @@ public class User {
     @NotBlank(message = "Please provide the password")
     private String password;
 
+    @NotNull
+    @NotBlank(message = "Please provide the first name")
+    private String firstName;
+
+    @NotNull
+    @NotBlank(message = "Please provide the last name")
+    private String lastName;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "org_id", referencedColumnName = "id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Organization organization;
+
+    private String role;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @NotNull
     @Transient
     private String passwordConfirm;
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
     public Long getId() {
         return id;
