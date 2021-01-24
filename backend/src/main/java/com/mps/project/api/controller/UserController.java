@@ -4,10 +4,12 @@ import com.mps.project.api.exceptions.ResourceNotFoundException;
 import com.mps.project.api.exceptions.ResponseMessage;
 import com.mps.project.api.model.Role;
 import com.mps.project.api.model.User;
+import com.mps.project.api.service.SecurityService;
 import com.mps.project.api.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,9 +23,17 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/users/organizations/{org_id}")
-    public ResponseEntity<List<User>> getUsersByOrganization(@PathVariable(value = "org_id") Long organizationId) {
-        List<User> users = userService.findByOrganizationId(organizationId)
+    @Autowired
+    private SecurityService securityService;
+
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getUsersByOrganization() {
+        String userName = securityService.findLoggedInUsername();
+        Optional<User> loggedInUser = userService.findByUsername(userName);
+        if(loggedInUser.isEmpty()) {
+            throw new AccessDeniedException("Unexpected error");
+        }
+        List<User> users = userService.findByOrganizationId(loggedInUser.get().getOrganization().getId())
                 .stream()
                 .filter(u -> !u.getRole().equalsIgnoreCase(Role.ADMIN.name()))
                 .collect(Collectors.toList());

@@ -36,9 +36,14 @@ public class ResourceController {
     @Autowired
     private ResourceBookingHistoryRepository resourceBookingHistoryRepository;
 
-    @GetMapping("/resources/organizations/{org_id}")
-    public ResponseEntity<List<Resource>> getResources(@PathVariable("org_id") Long organizationId) {
-        List<Resource> resourceList = resourceRepository.findByOrganization_Id(organizationId);
+    @GetMapping("/resources")
+    public ResponseEntity<List<Resource>> getResources() {
+        String userName = securityService.findLoggedInUsername();
+        Optional<User> loggedInUser = userService.findByUsername(userName);
+        if(loggedInUser.isEmpty()) {
+            throw new AccessDeniedException("Unexpected error");
+        }
+        List<Resource> resourceList = resourceRepository.findByOrganization_Id(loggedInUser.get().getOrganization().getId());
         resourceList.forEach(r -> {
             if(r.getUser() != null) {
                 r.getUser().setPassword(null);
@@ -47,9 +52,14 @@ public class ResourceController {
         return ResponseEntity.status(HttpStatus.OK).body(resourceList);
     }
 
-    @PostMapping("/resources/organizations/{org_id}")
-    public ResponseEntity<Resource> createResource(@PathVariable("org_id") Long organizationId,
-                                                   @RequestBody Resource resource) {
+    @PostMapping("/resources")
+    public ResponseEntity<Resource> createResource(@RequestBody Resource resource) {
+        String userName = securityService.findLoggedInUsername();
+        Optional<User> loggedInUser = userService.findByUsername(userName);
+        if(loggedInUser.isEmpty()) {
+            throw new AccessDeniedException("Unexpected error");
+        }
+        Long organizationId = loggedInUser.get().getOrganization().getId();
         Optional<Organization> organization = organizationRepository.findById(organizationId);
         if(organization.isEmpty()) {
             throw new ResourceNotFoundException("Organization with id " + organizationId + " does not exist");
@@ -84,7 +94,7 @@ public class ResourceController {
         resourceDb.get().setState(ResourceState.BOOKED.name());
         resourceDb.get().setEstimatedTimeBooking(resource.getEstimatedTimeBooking());
         Optional<User> user = userService.findByUsername(securityService.findLoggedInUsername());
-        if(user.isEmpty()) {
+        if(user.isEmpty() || !user.get().getRole().equalsIgnoreCase(Role.EDIT.name())) {
             throw new AccessDeniedException("User is not allowed to book this resource");
         }
         resourceDb.get().setUser(user.get());
