@@ -2,11 +2,9 @@ package com.mps.project.api.controller;
 
 import com.mps.project.api.exceptions.ConflictException;
 import com.mps.project.api.exceptions.ResourceNotFoundException;
-import com.mps.project.api.model.Organization;
-import com.mps.project.api.model.Resource;
-import com.mps.project.api.model.ResourceState;
-import com.mps.project.api.model.User;
+import com.mps.project.api.model.*;
 import com.mps.project.api.repository.OrganizationRepository;
+import com.mps.project.api.repository.ResourceBookingHistoryRepository;
 import com.mps.project.api.repository.ResourceRepository;
 import com.mps.project.api.service.SecurityService;
 import com.mps.project.api.service.UserService;
@@ -16,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,9 +33,17 @@ public class ResourceController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ResourceBookingHistoryRepository resourceBookingHistoryRepository;
+
     @GetMapping("/resources/organizations/{org_id}")
     public ResponseEntity<List<Resource>> getResources(@PathVariable("org_id") Long organizationId) {
         List<Resource> resourceList = resourceRepository.findByOrganization_Id(organizationId);
+        resourceList.forEach(r -> {
+            if(r.getUser() != null) {
+                r.getUser().setPassword(null);
+            }
+        });
         return ResponseEntity.status(HttpStatus.OK).body(resourceList);
     }
 
@@ -60,9 +67,18 @@ public class ResourceController {
     @PutMapping("/resources/book/{resource_id}")
     public ResponseEntity<Resource> bookResource(@PathVariable("resource_id") Long resourceId,
                                                  @RequestBody Resource resource) {
+        if(resource.getEstimatedTimeBooking() == null || resource.getBookingReason() == null) {
+            throw new IllegalArgumentException("Estimated time for booking and reason should not be null");
+        }
+        if(resource.getEstimatedTimeBooking().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Estimated time for booking is before the current date");
+        }
         Optional<Resource> resourceDb = resourceRepository.findById(resourceId);
         if(resourceDb.isEmpty()) {
             throw new ResourceNotFoundException("Resource with id " + resourceId + " could not be found");
+        }
+        if(resourceDb.get().getState().equalsIgnoreCase(ResourceState.BOOKED.name())) {
+            throw new ConflictException("Resource is already booked");
         }
         resourceDb.get().setBookingReason(resource.getBookingReason());
         resourceDb.get().setState(ResourceState.BOOKED.name());
@@ -73,6 +89,12 @@ public class ResourceController {
         }
         resourceDb.get().setUser(user.get());
         Resource updatedResource = resourceRepository.save(resourceDb.get());
+
+        ResourceBookingHistory resourceBookingHistory = new ResourceBookingHistory();
+        resourceBookingHistory.setResource(resourceDb.get());
+        resourceBookingHistory.setToBookingTime(resource.getEstimatedTimeBooking());
+        resourceBookingHistory.setUser(resourceDb.get().getUser());
+        resourceBookingHistoryRepository.save(resourceBookingHistory);
 
         updatedResource.getUser().setPassword(null);
         return ResponseEntity.status(HttpStatus.OK).body(updatedResource);

@@ -46,6 +46,7 @@ public class OrganizationController {
         if (orgOptional.isPresent()) {
             throw new ConflictException("Organization with name " + adminContext.getOrganization().getName() + " already exists");
         }
+        adminContext.getUser().setOrganization(adminContext.getOrganization());
         String decodedPassword = adminContext.getUser().getPassword();
         AdminContext updatedAdminContext = userService.createAdminAndOrganization(adminContext);
         securityService.autoLogin(adminContext.getUser().getUsername(), decodedPassword);

@@ -24,7 +24,7 @@ public class Resource {
 
     @UpdateTimestamp
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private LocalDateTime modifiedDate;
+    private LocalDateTime updatedTimestamp;
 
     private LocalDateTime estimatedTimeBooking;
 
@@ -56,8 +56,8 @@ public class Resource {
         this.name = name;
     }
 
-    public LocalDateTime getModifiedDate() {
-        return modifiedDate;
+    public LocalDateTime getUpdatedTimestamp() {
+        return updatedTimestamp;
     }
 
     public Organization getOrganization() {

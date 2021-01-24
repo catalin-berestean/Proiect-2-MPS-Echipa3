@@ -10,4 +10,5 @@ import java.util.List;
 public interface ResourceRepository extends JpaRepository<Resource, Long> {
     List<Resource> findByOrganization_Id(Long organizationId);
     List<Resource> findByOrganization_IdAndName(Long organizationId, String name);
+    List<Resource> findByState(String state);
 }
