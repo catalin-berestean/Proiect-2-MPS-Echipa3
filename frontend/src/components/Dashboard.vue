@@ -1,12 +1,5 @@
 <template>
     <v-container>
-<!--        <v-row justify="center">-->
-<!--            <div class="justify-center font-weight-light display-1 pa-5">-->
-<!--              Welcome, {{username}}-->
-<!--              <br>-->
-<!--              Organization : {{organizationName}}-->
-<!--            </div>-->
-<!--        </v-row>-->
       <v-card
           class="mx-auto overflow-hidden"
       >

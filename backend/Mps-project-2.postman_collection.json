@@ -12,7 +12,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n\t\"username\" : \"gabrielsimoooo\",\r\n\t\"password\" : \"gabrielsimoooo\",\r\n    \"confirmPassword\" : \"111\"\r\n}",
+					"raw": "{\r\n\t\"username\" : \"cccccccccccccc\",\r\n    \"firstName\" : \"B\",\r\n    \"lastName\" : \"A\",\r\n\t\"password\" : \"1\",\r\n    \"passwordConfirm\" : \"1\",\r\n    \"organization\" : {\r\n        \"name\" : \"Politehnicaa\"\r\n    }\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -40,7 +40,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n\t\"username\" : \"vvvvvvv\",\r\n\t\"password\" : \"1\"\r\n}",
+					"raw": "{\r\n\t\"username\" : \"cccccccccccccc\",\r\n\t\"password\" : \"1\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -86,7 +86,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8081/api/users?orgName=Politehnica",
+					"raw": "localhost:8081/api/users",
 					"host": [
 						"localhost"
 					],
@@ -94,12 +94,6 @@
 					"path": [
 						"api",
 						"users"
-					],
-					"query": [
-						{
-							"key": "orgName",
-							"value": "Politehnica"
-						}
 					]
 				}
 			},
@@ -141,7 +135,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\" : \"Politehnicaa\",\r\n    \"description\" : \"aaaaaa\"\r\n}",
+					"raw": "{\r\n    \"organization\": {\r\n        \"name\": \"Politehnicaa\",\r\n        \"description\": \"aaaaaa\"\r\n    },\r\n    \"user\" : {\r\n       \t\"username\" : \"admin3\",\r\n        \"firstName\" : \"B\",\r\n        \"lastName\" : \"A\",\r\n\t    \"password\" : \"1\",\r\n        \"passwordConfirm\" : \"1\"\r\n    }\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -165,10 +159,27 @@
 		{
 			"name": "CREATE resource",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\" : \"Sala de sedinte 10\",\r\n    \"description\" : \"aaaaa\",\r\n    \"type\" : \"ROOM\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": ""
+					"raw": "localhost:8081/api/resources",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"resources"
+					]
 				}
 			},
 			"response": []
@@ -176,21 +187,60 @@
 		{
 			"name": "Book resource",
 			"request": {
-				"method": "GET",
+				"method": "PUT",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"estimatedTimeBooking\": \"2021-01-25T13:51:59\",\r\n    \"bookingReason\": \"CA ASA VREAU IO!!!\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": ""
+					"raw": "localhost:8081/api/resources/book/2",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"resources",
+						"book",
+						"2"
+					]
 				}
 			},
 			"response": []
 		},
 		{
 			"name": "GET resources",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "GET",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": ""
+					"raw": "localhost:8081/api/resources",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"resources"
+					]
 				}
 			},
 			"response": []
