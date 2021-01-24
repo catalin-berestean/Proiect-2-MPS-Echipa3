@@ -58,7 +58,29 @@
                                                         sm="6"
                                                         md="4"
                                                     >
-                                                        <v-select
+                                                        <v-text-field
+                                                            v-model="editedItem.firstName"
+                                                            label="First name"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col
+                                                        cols="12"
+                                                        sm="6"
+                                                        md="4"
+                                                    >
+                                                        <v-text-field
+                                                            v-model="editedItem.lastName"
+                                                            label="Last name"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                </v-row>
+                                                <v-row justify="center">
+                                                    <v-col
+                                                        cols="12"
+                                                        sm="6"
+                                                        md="4"
+                                                    >
+                                                        <v-select align='middle'
                                                             :items="permissions"
                                                             item-text="role"
                                                             item-value="role"
@@ -132,11 +154,45 @@
 
 
                         <v-tab-item>
-                            text 2
+                            <v-card>
+                                <div align="center">
+                                    <br v-for="c in countSpaces" :key="c">
+                                    <form style="width: 50%;">
+                                        <v-text-field
+                                            v-model="resourceName"
+                                            label="Resource name"
+                                            required
+                                            solo
+                                        ></v-text-field>
+                                        <v-text-field
+                                            v-model="resourceDescription"
+                                            label="Description"
+                                            required
+                                            solo
+                                        ></v-text-field>
+                                        <v-text-field
+                                            v-model="resourceType"
+                                            label="Resource type"
+                                            required
+                                            solo
+                                            placeholder="ROOM"
+                                        ></v-text-field>
+                                        <br v-for="c in countSpaces" :key="c">
+                                        <v-btn
+                                            color="success"
+                                            @click="addNewResorce"
+                                        >
+                                            Add resource
+                                        </v-btn>
+                                    </form>
+                                    <br v-for="c in countSpaces" :key="c">
+                                </div>
+                            </v-card>
                         </v-tab-item>
                     </v-tabs>
                 </v-card>
                 <v-spacer></v-spacer>
+                <br v-for="c in countSpaces" :key="c">
                 <v-row>
                     <v-col align="center">
                         <v-btn
@@ -193,8 +249,8 @@ export default {
     },
 
     methods: {
-        saveChanges() {
-            // Save users (new) permissions
+        addNewResorce() {
+            //  method to add a new resource
         },
 
         logout() {
@@ -257,20 +313,22 @@ export default {
 
         headers: [
             { text: 'Username', value: 'name', align: 'start', sortable: true }, 
+            { text: 'First name', value: 'firstName', sortable: true }, 
+            { text: 'Last name', value: 'lastName', sortable: true }, 
             { text: 'Permission', value: 'role' },
             { text: 'Actions', value: 'actions', sortable: false }
         ],
 
         users: [
-            {name: 'user1', role: 'vizualizare'},
-            {name: 'user2', role: 'vizualizare'},
-            {name: 'user3', role: 'rezervare'},
-            {name: 'user4', role: 'vizualizare'},
-            {name: 'user3', role: 'rezervare'},
-            {name: 'user3', role: 'rezervare'},
-            {name: 'user3', role: 'rezervare'},
-            {name: 'user3', role: 'rezervare'},
-            {name: 'user3', role: 'rezervare'}
+            {name: 'user1', firstName: 'Ion', lastName: 'Popescu', role: 'vizualizare'},
+            {name: 'user2', firstName: 'Ion', lastName: 'Popescu', role: 'vizualizare'},
+            {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
+            {name: 'user4', firstName: 'Ion', lastName: 'Popescu', role: 'vizualizare'},
+            {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
+            {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
+            {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
+            {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
+            {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'}
         ],
 
         editedIndex: -1,
@@ -282,6 +340,11 @@ export default {
             name: '',
             role: ''
         },
+
+        resourceName: '',
+        resourceDescription: '',
+        resourceType: '',
+
 
     }),
 
