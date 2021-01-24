@@ -147,7 +147,17 @@
                           @click:append="show1 = !show1"
                       ></v-text-field>
                     </v-col>
-                    <v-spacer></v-spacer>
+                    <v-col cols="12">
+                      <v-combobox
+                        v-model="selectedOrganization"
+                        :items="organizations"
+                        label="Organization name"
+                        outlined
+                        dense
+                      ></v-combobox>
+                    </v-col>
+                  </v-row>
+                  <v-row>
                     <v-col class="d-flex ml-auto" cols="12" sm="3" xsm="12">
                       <v-btn
                           x-large
@@ -155,6 +165,103 @@
                           :disabled="!valid"
                           color="success"
                           @click="validateRegister"
+                      >Register</v-btn
+                      >
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </v-card-text>
+            </v-card>
+          </v-tab-item>
+          <v-tab-item>
+            <v-card class="px-4">
+              <v-card-text>
+                <v-form ref="adminRegisterForm" v-model="valid" lazy-validation>
+                  <v-alert
+                      dense
+                      v-show="status_success"
+                      type="success"
+                      elevation="4"
+                  >
+                    {{ success_message }}
+                  </v-alert>
+                  <v-alert
+                      dense
+                      v-show="status_error"
+                      type="error"
+                      elevation="4"
+                  >
+                    {{ error_message }}
+                  </v-alert>
+                  <v-row>
+                    <v-col cols="12" sm="6" md="6">
+                      <v-text-field
+                          v-model="firstNameAdmin"
+                          :rules="[rules.required]"
+                          label="First Name"
+                          maxlength="20"
+                          required
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="6" md="6">
+                      <v-text-field
+                          v-model="lastNameAdmin"
+                          :rules="[rules.required]"
+                          label="Last Name"
+                          maxlength="20"
+                          required
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                          v-model="usernameAdmin"
+                          label="Username"
+                          :rules="[rules.required, rules.min, rules.max]"
+                          required
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                          v-model="passwordAdmin"
+                          :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+                          :rules="[rules.required]"
+                          :type="show1 ? 'text' : 'password'"
+                          name="input-10-1"
+                          label="Password"
+                          counter
+                          @click:append="show1 = !show1"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                          block
+                          v-model="password_verifyAdmin"
+                          :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+                          :rules="[rules.required, passwordMatchAdmin]"
+                          :type="show1 ? 'text' : 'password'"
+                          name="input-10-1"
+                          label="Confirm Password"
+                          counter
+                          @click:append="show1 = !show1"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                          v-model="organizationNameAdmin"
+                          :rules="[rules.required, rules.min, rules.max]"
+                          label="Organization Name"
+                          required
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col class="d-flex ml-auto" cols="12" sm="3" xsm="12">
+                      <v-btn
+                          x-large
+                          block
+                          :disabled="!valid"
+                          color="success"
+                          @click="validateAdminRegister"
                       >Register</v-btn
                       >
                     </v-col>
@@ -180,8 +287,11 @@ export default {
       return () =>
           this.password === this.password_verify || "Password must match";
     },
+    passwordMatchAdmin() {
+      return () =>
+          this.passwordAdmin === this.password_verifyAdmin || "Password must match";
+    }
   },
-
   methods: {
     validateLogin() {
       if (this.$refs.loginForm.validate()) {
@@ -194,6 +304,10 @@ export default {
               console.log(res);
               this.success_message = res.data["message"];
               this.status_success = true;
+              localStorage.setItem("username", this.username);
+              this.$router.push({ 
+                name: 'Dashboard'
+                });
             })
             .catch((error) => {
               this.error_message = error.response.data["message"];
@@ -213,6 +327,37 @@ export default {
               console.log(res);
               this.success_message = res.data["message"];
               this.status_success = true;
+              localStorage.setItem("username", this.username);
+              localStorage.setItem("role", "viewer");
+              localStorage.setItem("organizationName", this.selectedOrganization);
+              this.$router.push({ 
+                name: 'Dashboard'
+                });
+            })
+            .catch((error) => {
+              this.error_message = error.response.data["message"];
+              this.status_error = true;
+            });
+      }
+    },
+    validateAdminRegister() {
+      if (this.$refs.adminRegisterForm.validate()) {
+          axios
+            .post(API_PATH + "/register", {
+              username: this.usernameAdmin,
+              password: this.passwordAdmin,
+              passwordConfirm: this.password_verifyAdmin,
+            })
+            .then((res) => {
+              console.log(res);
+              this.success_message = res.data["message"];
+              this.status_success = true;
+              localStorage.setItem("username", this.usernameAdmin);
+              localStorage.setItem("role", "administrator");
+              localStorage.setItem("organizationName", this.organizationNameAdmin);
+              this.$router.push({ 
+                name: 'Dashboard'
+                });
             })
             .catch((error) => {
               this.error_message = error.response.data["message"];
@@ -238,16 +383,31 @@ export default {
     tabs: [
       { name: "Login", icon: "mdi-account" },
       { name: "Register", icon: "mdi-account-outline" },
+      { name: "Admin Register", icon: "mdi-account-outline" }
+    ],
+    organizations: [
+      "organization 1",
+      "organization 2",
+      "organization 3"
     ],
     valid: true,
+
+    loginPassword: "",
+    loginUsername: "",
 
     firstName: "",
     lastName: "",
     username: "",
     password: "",
     password_verify: "",
-    loginPassword: "",
-    loginUsername: "",
+    selectedOrganization: "",
+
+    firstNameAdmin: "",
+    lastNameAdmin: "",
+    usernameAdmin : "",
+    passwordAdmin: "",
+    password_verifyAdmin: "",
+    organizationNameAdmin: "",
 
     show1: false,
     rules: {
@@ -256,6 +416,10 @@ export default {
       max: (v) => (v && v.length <= 20) || "Max 20 characters",
     },
   }),
+
+  created() {
+    localStorage.clear();
+  }
 };
 </script>
 

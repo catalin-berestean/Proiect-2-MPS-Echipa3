@@ -1,0 +1,3 @@
+//TABS
+// user, first name, lastname, role, actions(edit) -> v-data-table 
+// resurce form: name, description, type: "ROOM"
