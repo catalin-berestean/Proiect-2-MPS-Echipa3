@@ -43,7 +43,6 @@ public class User {
     private String role;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @NotNull
     @Transient
     private String passwordConfirm;
 
@@ -101,9 +100,5 @@ public class User {
 
     public String getPasswordConfirm() {
         return passwordConfirm;
-    }
-
-    public void setPasswordConfirm(String passwordConfirm) {
-        this.passwordConfirm = passwordConfirm;
     }
 }

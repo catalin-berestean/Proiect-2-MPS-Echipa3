@@ -15,7 +15,6 @@ public class Organization {
 
     @NotNull
     @Column(unique = true)
-    @Size(min = 5)
     @NotBlank(message = "Please provide the name of the organization")
     private String name;
 

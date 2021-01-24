@@ -1,10 +1,6 @@
 package com.mps.project.api.controller;
 
-import com.mps.project.api.exceptions.ConflictException;
-import com.mps.project.api.exceptions.PasswordRegisterException;
-import com.mps.project.api.exceptions.ResourceNotFoundException;
 import com.mps.project.api.exceptions.ResponseMessage;
-import com.mps.project.api.model.Organization;
 import com.mps.project.api.model.Role;
 import com.mps.project.api.model.User;
 import com.mps.project.api.repository.OrganizationRepository;
@@ -15,12 +11,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.Optional;
+
+import static com.mps.project.api.utils.UserUtils.getUserJson;
 
 @RestController
 public class AuthenticationController {
@@ -46,38 +47,15 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<User> registration(@RequestBody @Valid User user) {
-        // we save the password because save method encodes the password
         String decodedPassword = user.getPassword();
-        String passwordConfirm = user.getPasswordConfirm();
-
-        if (!decodedPassword.equals(passwordConfirm)) {
-            throw new PasswordRegisterException("Password confirm is not correct");
-        }
-
-        if (userService.findByUsername(user.getUsername()).isPresent()) {
-            throw new ConflictException("Username is already taken");
-        }
-        Optional<Organization> orgFromDb = organizationRepository.findByName(user.getOrganization().getName());
-        if(orgFromDb.isEmpty()) {
-            throw new ResourceNotFoundException("Organization with name " + user.getOrganization().getName() + " does not exist");
-        }
-
-        user.setOrganization(orgFromDb.get());
-        user.setRole(Role.VIEW.name());
-
-        userService.save(user);
+        User userToClient = userService.registerUser(user, Role.VIEW.name());
         // we send the decoded password to autologin method
         securityService.autoLogin(user.getUsername(), decodedPassword);
-        User userToClient = new User();
-        userToClient.setRole(Role.VIEW.name());
-        userToClient.setOrganization(orgFromDb.get());
-        userToClient.setUsername(user.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(userToClient);
     }
 
     @GetMapping("/me/logout")
     public ResponseEntity<ResponseMessage> logout(HttpServletRequest request, HttpServletResponse response) {
-
         String username = securityService.findLoggedInUsername();
         securityService.logout(request, response);
 
@@ -85,13 +63,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseMessage> login(@RequestBody User user) {
+    public ResponseEntity<User> login(@RequestBody User user) {
         securityService.autoLogin(user.getUsername(), user.getPassword());
         Optional<User> userDb = userService.findByUsername(user.getUsername());
-        if(userDb.isEmpty()) {
+        if (userDb.isEmpty()) {
             throw new AccessDeniedException("Username " + user.getUsername() + " was not found");
         }
+        User userToClient = getUserJson(userDb.get());
 
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("Login successful for " + user.getUsername()));
+        return ResponseEntity.status(HttpStatus.OK).body(userToClient);
     }
 }

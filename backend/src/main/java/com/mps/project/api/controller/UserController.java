@@ -21,11 +21,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/users")
-    public ResponseEntity<List<User>> getUsersByOrganization(@RequestParam(value="orgName") String orgName) {
-        List<User> users = userService.findAll()
+    @GetMapping("/users/organizations/{org_id}")
+    public ResponseEntity<List<User>> getUsersByOrganization(@PathVariable(value = "org_id") Long organizationId) {
+        List<User> users = userService.findByOrganizationId(organizationId)
                 .stream()
-                .filter(u -> u.getOrganization().getName().equals(orgName))
+                .filter(u -> !u.getRole().equalsIgnoreCase(Role.ADMIN.name()))
                 .collect(Collectors.toList());
         users.forEach(u -> u.setPassword(null));
         return ResponseEntity.status(HttpStatus.OK).body(users);
@@ -34,7 +34,7 @@ public class UserController {
     @PutMapping("/users/{id}")
     public ResponseEntity<ResponseMessage> changeUserRole(@PathVariable("id") Long userId, @RequestBody Map<String, String> roleMap) {
         Optional<User> userFromDb = userService.findById(userId);
-        if(userFromDb.isEmpty()) {
+        if (userFromDb.isEmpty()) {
             throw new ResourceNotFoundException("User with id " + userId + " was not found");
         }
         User updatedUser = userFromDb.get();
@@ -42,7 +42,7 @@ public class UserController {
         String newRole = roleMap.get("role");
         updatedUser.setRole(newRole);
         User savedUser = userService.updateUser(updatedUser);
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new ResponseMessage("User with name " + savedUser.getUsername() + " changed role from " + oldRole + " to " + newRole));
+
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage("User with name " + savedUser.getUsername() + " changed role from " + oldRole + " to " + newRole));
     }
 }
