@@ -248,7 +248,7 @@
                     <v-col cols="12">
                       <v-text-field
                           v-model="organizationNameAdmin"
-                          :rules="[rules.required, rules.min, rules.max]"
+                          :rules="[rules.required]"
                           label="Organization Name"
                           required
                       ></v-text-field>

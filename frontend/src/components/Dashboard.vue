@@ -9,7 +9,7 @@
 
         
         <v-card-text>
-            <div v-if = "username === 'admin'">
+            <div v-if = "role === 'ADMIN'">
                 <v-card>
                     <v-tabs
                     background-color="deep-purple accent-4"
@@ -163,19 +163,21 @@
                                             label="Resource name"
                                             required
                                             solo
+                                            placeholder="Resource name"
                                         ></v-text-field>
                                         <v-text-field
                                             v-model="resourceDescription"
                                             label="Description"
                                             required
                                             solo
+                                            placeholder="Resource description"
                                         ></v-text-field>
                                         <v-text-field
                                             v-model="resourceType"
                                             label="Resource type"
                                             required
                                             solo
-                                            placeholder="ROOM"
+                                            placeholder="Resource type"
                                         ></v-text-field>
                                         <br v-for="c in countSpaces" :key="c">
                                         <v-btn
@@ -303,6 +305,7 @@ export default {
     data: () => ({
         countSpaces: 3,
         username: '',
+        role: '',
         dialog: false,
         dialogDelete: false,
 
@@ -352,6 +355,7 @@ export default {
         if (localStorage.getItem('username')) {
             try {
                 this.username = localStorage.getItem('username');
+                this.role = localStorage.getItem("role");
             } catch(e) {
                 localStorage.removeItem('username');
             }
