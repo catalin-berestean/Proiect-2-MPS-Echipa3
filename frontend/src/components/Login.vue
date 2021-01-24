@@ -148,13 +148,13 @@
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12">
-                      <v-combobox
+                      <v-select
                         v-model="selectedOrganization"
                         :items="organizations"
                         label="Organization name"
                         outlined
                         dense
-                      ></v-combobox>
+                      ></v-select>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -292,6 +292,12 @@ export default {
           this.passwordAdmin === this.password_verifyAdmin || "Password must match";
     }
   },
+  mounted() {
+    axios.get(API_PATH + "/organizations")
+        .then(response => {
+            this.organizations = response.data.map(x => x.name);
+        })
+  },
   methods: {
     validateLogin() {
       if (this.$refs.loginForm.validate()) {
@@ -299,18 +305,25 @@ export default {
             .post(API_PATH + "/login", {
               username: this.username,
               password: this.password,
-            })
+            }, {withCredentials: true})
             .then((res) => {
               console.log(res);
               this.success_message = res.data["message"];
               this.status_success = true;
               localStorage.setItem("username", this.username);
+              localStorage.setItem("role", res.data["role"])
+              localStorage.setItem("organizationName", res.data.organization["name"])
               this.$router.push({ 
                 name: 'Dashboard'
                 });
             })
             .catch((error) => {
-              this.error_message = error.response.data["message"];
+              let msg = error.response.data["message"]
+              if(!msg) {
+                this.error_message = "Error processing the request";
+              } else {
+                this.error_message = msg;
+              }
               this.status_error = true;
             });
       }
@@ -321,21 +334,30 @@ export default {
             .post(API_PATH + "/register", {
               username: this.username,
               password: this.password,
+              firstName: this.firstName,
+              lastName: this.lastName,
               passwordConfirm: this.password_verify,
-            })
+              organization: {
+                name: this.selectedOrganization
+              }
+            }, {withCredentials: true})
             .then((res) => {
               console.log(res);
               this.success_message = res.data["message"];
               this.status_success = true;
               localStorage.setItem("username", this.username);
-              localStorage.setItem("role", "viewer");
               localStorage.setItem("organizationName", this.selectedOrganization);
               this.$router.push({ 
-                name: 'Dashboard'
+                  name: 'Dashboard'
                 });
             })
             .catch((error) => {
-              this.error_message = error.response.data["message"];
+              let msg = error.response.data["message"];
+              if(!msg) {
+                this.error_message = "Error processing the request";
+              } else {
+                this.error_message = msg;
+              }
               this.status_error = true;
             });
       }
@@ -343,24 +365,36 @@ export default {
     validateAdminRegister() {
       if (this.$refs.adminRegisterForm.validate()) {
           axios
-            .post(API_PATH + "/register", {
-              username: this.usernameAdmin,
-              password: this.passwordAdmin,
-              passwordConfirm: this.password_verifyAdmin,
-            })
+            .post(API_PATH + "/organizations",{
+              user: {
+                username: this.usernameAdmin,
+                password: this.passwordAdmin,
+                firstName: this.firstNameAdmin,
+                lastName: this.lastNameAdmin,
+                passwordConfirm: this.password_verifyAdmin
+              },
+              organization: {
+                name: this.organizationNameAdmin
+              }
+            }, {withCredentials: true})
             .then((res) => {
               console.log(res);
               this.success_message = res.data["message"];
               this.status_success = true;
               localStorage.setItem("username", this.usernameAdmin);
-              localStorage.setItem("role", "administrator");
+              localStorage.setItem("role", res.data.user['role']);
               localStorage.setItem("organizationName", this.organizationNameAdmin);
-              this.$router.push({ 
-                name: 'Dashboard'
+              this.$router.push({
+                  name: 'Dashboard'
                 });
             })
             .catch((error) => {
-              this.error_message = error.response.data["message"];
+              let msg = error.response.data["message"];
+              if(!msg) {
+                this.error_message = "Error processing the request";
+              } else {
+                this.error_message = msg;
+              }
               this.status_error = true;
             });
       }
@@ -385,11 +419,7 @@ export default {
       { name: "Register", icon: "mdi-account-outline" },
       { name: "Admin Register", icon: "mdi-account-outline" }
     ],
-    organizations: [
-      "organization 1",
-      "organization 2",
-      "organization 3"
-    ],
+    organizations: [],
     valid: true,
 
     loginPassword: "",
