@@ -1,80 +1,86 @@
 <template>
     <v-container>
-        <v-row justify="center">
-            <div class="font-weight-regular display-1 pa-4">
-              Welcome, {{username}}
-            </div>
-        </v-row>
+<!--        <v-row justify="center">-->
+<!--            <div class="justify-center font-weight-light display-1 pa-5">-->
+<!--              Welcome, {{username}}-->
+<!--              <br>-->
+<!--              Organization : {{organizationName}}-->
+<!--            </div>-->
+<!--        </v-row>-->
+      <v-card
+          class="mx-auto overflow-hidden"
+      >
+        <v-app-bar fixed>
+          <v-app-bar-nav-icon></v-app-bar-nav-icon>
+          <v-toolbar-title>Welcome, {{username}}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-title>Organization: {{organizationName}}</v-toolbar-title>
+          <v-menu bottom left>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn icon color="black" v-bind="attrs" v-on="on">
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+
+            <v-list>
+              <v-list-item>
+                <v-list-item-title>
+                  <v-btn @click="logout">
+                    Logout
+                  </v-btn>
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-app-bar>
+
+      </v-card>
 
         <v-card-text>
+          <br><br><br>
             <div v-if = "role === 'ADMIN'">
                 <v-card>
                     <v-tabs
                     background-color="deep-purple accent-4"
                     center-active
                     fixed-tabs
-                    dark
-                    >
+                    dark>
                         <v-tab>Users</v-tab>
                         <v-tab>Resources</v-tab>
-                        
-                        <v-tab-item>
-                          <Users />
-                        </v-tab-item>
                       <v-tab-item>
-                        <Resources/>
+                        <Users />
+                      </v-tab-item>
+                      <v-tab-item>
+                        <ResourcesAdmin/>
                       </v-tab-item>
                     </v-tabs>
                 </v-card>
-                <v-spacer></v-spacer>
-                <br v-for="c in countSpaces" :key="c">
-                <v-row>
-                    <v-col align="center">
-                        <v-btn
-                            large
-                            raised
-                            rounded
-                            color="primary"
-                            @click="logout"
-                            >Logout</v-btn>
-                    </v-col>
-                </v-row>  
             </div>
             <div v-else>
                 <v-card>
                     <h1>User normal</h1>
-                </v-card>                
-
-                <v-row align="center" justify="center">
-                    <v-col align="center">
-                        <v-btn
-                            large
-                            raised
-                            color="primary"
-                            @click="logout"
-                            >Logout</v-btn>
-                    </v-col>
-                </v-row>           
-            </div>  
+                </v-card>
+            </div>
         </v-card-text>
-        
-        
     </v-container>
 </template>
 
 <script>
-import Resources from "@/components/Resources.vue";
+import ResourcesAdmin from "@/components/ResourcesAdmin.vue";
 import Users from "@/components/Users";
 export default {
     name: 'Dashboard',
     components: {
-      Resources,
+      ResourcesAdmin,
       Users
     },
     data: () => ({
+        drawer: false,
+        group: null,
         countSpaces: 2,
         username: '',
         role: '',
+        organizationName: ''
     }),
 
     mounted: function() {
@@ -82,6 +88,7 @@ export default {
             try {
                 this.username = localStorage.getItem('username');
                 this.role = localStorage.getItem("role");
+                this.organizationName = localStorage.getItem('organizationName');
             } catch(e) {
                 localStorage.removeItem('username');
             }

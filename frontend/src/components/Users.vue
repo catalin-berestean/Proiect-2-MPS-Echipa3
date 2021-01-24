@@ -1,6 +1,7 @@
 <template>
   <v-data-table
       :headers="headers"
+      :search="search"
       :items="users"
       sort-by="name"
       class="elevation-1"
@@ -20,38 +21,6 @@
 
             <v-card-text>
               <v-container>
-                <v-row>
-                  <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                  >
-                    <v-text-field
-                        v-model="editedItem.name"
-                        label="User name"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                  >
-                    <v-text-field
-                        v-model="editedItem.firstName"
-                        label="First name"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                      cols="12"
-                      sm="6"
-                      md="4"
-                  >
-                    <v-text-field
-                        v-model="editedItem.lastName"
-                        label="Last name"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
                 <v-row justify="center">
                   <v-col
                       cols="12"
@@ -66,6 +35,7 @@
                               persistent-hint
                               return-object
                               single-line
+                              v-model="editedItem.role"
                     ></v-select>
                   </v-col>
                 </v-row>
@@ -103,6 +73,11 @@
           </v-card>
         </v-dialog>
       </v-toolbar>
+      <v-text-field
+          v-model="search"
+          label="Search"
+          class="mx-10"
+      ></v-text-field>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
       <v-icon
@@ -122,7 +97,7 @@
     <template v-slot:no-data>
       <v-btn
           color="primary"
-          @click="initialize"
+          @click="getUsers"
       >
         Reset
       </v-btn>
@@ -131,19 +106,24 @@
 </template>
 
 <script>
+import axios from "axios";
+const API_PATH = "http://localhost:8081/api";
 export default {
   name: "Users.vue",
   computed: {
     formTitle () {
-      return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+      return this.editedIndex === -1 ? 'New Item' : 'Edit user permissions'
     }
+  },
+  mounted() {
+    this.getUsers()
   },
   methods: {
     getUsers() {
-
-    },
-    getResources() {
-
+      axios.get(API_PATH + "/users")
+          .then(response => {
+            this.users = response.data;
+          })
     },
 
     editItem (item) {
@@ -185,8 +165,18 @@ export default {
       } else {
         this.users.push(this.editedItem)
       }
-      this.close()
-    }
+      axios.put(API_PATH + "/users/" + this.editedItem.id, {
+            role: this.editedItem.role
+          })
+          .then((res) => {
+            console.log(res);
+            this.close();
+          })
+          .catch((error) => {
+            console.log(error);
+            this.close();
+          });
+     }
   },
   watch: {
     dialog (val) {
@@ -197,41 +187,35 @@ export default {
     },
   },
   data: () => ({
+    search: '',
     dialog: false,
     dialogDelete: false,
-    permissions: [
-      {role: 'VIEW'},
-      {role: 'EDIT'}
-    ],
+    permissions: ['VIEW', 'EDIT'],
 
     headers: [
-      { text: 'Username', value: 'name', align: 'start', sortable: true },
+      { text: 'Username', value: 'username', align: 'start', sortable: true },
       { text: 'First name', value: 'firstName', sortable: true },
       { text: 'Last name', value: 'lastName', sortable: true },
       { text: 'Permission', value: 'role' },
       { text: 'Actions', value: 'actions', sortable: false }
     ],
 
-    users: [
-      {name: 'user1', firstName: 'Ion', lastName: 'Popescu', role: 'vizualizare'},
-      {name: 'user2', firstName: 'Ion', lastName: 'Popescu', role: 'vizualizare'},
-      {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
-      {name: 'user4', firstName: 'Ion', lastName: 'Popescu', role: 'vizualizare'},
-      {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
-      {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
-      {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
-      {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'},
-      {name: 'user3', firstName: 'Ion', lastName: 'Popescu', role: 'rezervare'}
-    ],
+    users: [],
 
     editedIndex: -1,
     editedItem: {
+      id: '',
       name: '',
-      role: ''
+      role: '',
+      firstName: '',
+      lastName: ''
     },
     defaultItem: {
+      id: '',
       name: '',
-      role: ''
+      role: '',
+      firstName: '',
+      lastName: ''
     }
   })
 }
