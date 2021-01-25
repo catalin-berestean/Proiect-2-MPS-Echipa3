@@ -68,6 +68,49 @@
                         label="Search"
                         class="mx-10"
                       ></v-text-field>
+                      <v-dialog
+                        v-model="dialog"
+                        max-width="500px"
+                      >
+
+                        <v-card>
+                          <v-card-title>
+                            <span class="headline">Book this resource</span>
+                          </v-card-title>
+
+                          <v-card-text>
+                            <v-container>
+                              <v-row justify="center">
+                                <v-col
+                                    cols="12"
+                                    sm="6"
+                                    md="4"
+                                >
+                                <h1> text ampulea</h1>
+                                </v-col>
+                              </v-row>
+                            </v-container>
+                          </v-card-text>
+
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                color="blue darken-1"
+                                text
+                                @click="close"
+                            >
+                              Cancel
+                            </v-btn>
+                            <v-btn
+                                color="blue darken-1"
+                                text
+                                @click="book"
+                            >
+                              Book
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
                     </template>
                     <template v-slot:[`item.actions`]="{ item }">
                       <v-icon v-if= "role === 'EDIT'"
@@ -115,6 +158,7 @@ export default {
       search: '',
       dialog: false,
       dialogDelete: false,
+
       expanded: [],
       singleExpand: true,
 
@@ -141,6 +185,20 @@ export default {
         { resourceName: "Resource 4", resourceDescription: "Description 4", resourceType: "ROOM", resourceState: "Available"},
         { resourceName: "Resource 5", resourceDescription: "Description 5", resourceType: "ROOM", resourceState: "Available"},
       ],
+
+      editedIndex: -1,
+      editedItem: {
+        resourceName: '',
+        resourceDescription: '',
+        resourceType: '',
+        resourceState: ''
+      },
+      defaultItem: {
+        resourceName: '',
+        resourceDescription: '',
+        resourceType: '',
+        resourceState: ''
+      },
     }),
 
     mounted: function() {
@@ -148,10 +206,44 @@ export default {
       this.role = localStorage.getItem("role");
       this.organizationName = localStorage.getItem('organizationName');
     },
+
+    computed: {
+      formTitle () {
+        return this.editedIndex === -1 ? 'New Item' : 'Book this resource'
+      }
+    },
+    
+    watch: {
+      dialog (val) {
+        val || this.close()
+      },
+      dialogDelete (val) {
+        val || this.closeDelete()
+      },
+    },
+
     methods: {
       logout() {
         this.$router.push({ name: 'Login' });
+      },
+
+      bookItem(item) {
+        this.editedIndex = this.resources.indexOf(item)
+        this.editedItem = Object.assign({}, item)
+        this.dialog = true
+      },
+      
+      close () {
+        this.dialog = false
+        this.$nextTick(() => {
+          this.editedItem = Object.assign({}, this.defaultItem)
+          this.editedIndex = -1
+        })
+      },
+      
+      book () {
       }
+
     },
 
     created(){
