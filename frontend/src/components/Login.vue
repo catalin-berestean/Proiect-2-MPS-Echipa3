@@ -382,6 +382,7 @@ export default {
                 passwordConfirm: this.password_verifyAdmin
               },
               organization: {
+                description: this.organizationDescriptionAdmin,
                 name: this.organizationNameAdmin
               }
             }, {withCredentials: true})

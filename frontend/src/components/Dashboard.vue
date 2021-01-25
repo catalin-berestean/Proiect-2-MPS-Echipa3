@@ -77,15 +77,9 @@ export default {
     }),
 
     mounted: function() {
-        if (localStorage.getItem('username')) {
-            try {
-                this.username = localStorage.getItem('username');
-                this.role = localStorage.getItem("role");
-                this.organizationName = localStorage.getItem('organizationName');
-            } catch(e) {
-                localStorage.removeItem('username');
-            }
-        }
+      this.username = localStorage.getItem('username');
+      this.role = localStorage.getItem("role");
+      this.organizationName = localStorage.getItem('organizationName');
     },
     methods: {
       logout() {
