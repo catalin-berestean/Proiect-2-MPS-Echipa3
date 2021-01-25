@@ -84,7 +84,7 @@
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
                       <td :colspan="headers.length">
-                        More info about {{ item.name }}
+                        More info about {{ item.resourceName }}
                       </td>
                     </template>
                     <template v-slot:no-data>
