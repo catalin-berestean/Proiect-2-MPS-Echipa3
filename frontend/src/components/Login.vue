@@ -318,7 +318,7 @@ export default {
               console.log(res);
               this.success_message = res.data["message"];
               this.status_success = true;
-              localStorage.setItem("username", this.username);
+              localStorage.setItem("username", this.loginUsername);
               localStorage.setItem("role", res.data["role"])
               localStorage.setItem("organizationName", res.data.organization["name"])
               this.$router.push({ 
