@@ -80,15 +80,37 @@
 
                           <v-card-text>
                             <v-container>
-                              <v-row justify="center">
-                                <v-col
-                                    cols="12"
-                                    sm="6"
-                                    md="4"
-                                >
-                                <h1> text ampulea</h1>
-                                </v-col>
-                              </v-row>
+                                  <v-form ref="form">
+                                    <v-text-field
+                                        label="Resource description"
+                                        v-model="description">
+                                    ></v-text-field>
+                                    <v-text-field
+                                        v-model="first"
+                                        label="First name"
+                                    ></v-text-field>
+                                    <v-text-field
+                                        v-model="last"
+                                        label="Last name"
+                                    ></v-text-field>
+                                    <v-text-field
+                                        v-model="reason"
+                                        label="Reason of reserving the resource"
+                                    ></v-text-field>
+                                    <v-text-field
+                                        v-model="time"
+                                        label="Estimated reservation time"
+                                    ></v-text-field>
+                                    <v-text-field
+                                        v-model="current_time"
+                                        label="Current reservation time"
+                                    ></v-text-field>
+                                    <v-checkbox
+                                        v-model="notify"
+                                        label="Keep me notified"
+                                    ></v-checkbox>
+                                  </v-form>
+                                
                             </v-container>
                           </v-card-text>
 
@@ -155,6 +177,14 @@ export default {
       Users
     },
     data: () => ({
+      description: '',
+      first: '',
+      last: '',
+      reason: '',
+      time: '',
+      current_time: '',
+      notify: '',
+
       search: '',
       dialog: false,
       dialogDelete: false,
