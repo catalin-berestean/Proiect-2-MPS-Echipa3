@@ -61,6 +61,11 @@
                     :single-expand="singleExpand"
                     :expanded.sync="expanded"
                   >
+                    <template v-slot:[`item.timer`] = "{ item }">
+                      <h2 date='item.timer'>{{item.timer}} {{days}} d {{hours}} h {{minutes}} m {{seconds}} s</h2>
+                    </template>
+
+
                     <template v-slot:top>
                       <v-text-field
                         v-model="search"
@@ -148,7 +153,7 @@
                       </v-icon>
                     </template>
                     <template v-slot:expanded-item="{ headers, item }">
-                      <td :colspan="headers.length">
+                      <td :colspan="headers.length" date=item.timer>
                         More info about {{ item.resourceName }}
                       </td>
                     </template>
@@ -176,6 +181,17 @@ export default {
       ResourcesAdmin,
       Users
     },
+
+    two_digits: (value) => {
+      if (value < 0) {
+        return '00';
+      }
+      if (value.toString().length <= 1) {
+        return `0${value}`;
+      }
+      return value;
+    },
+
     data: () => ({
       description: '',
       first: '',
@@ -204,17 +220,20 @@ export default {
         { text: 'Description', value: 'resourceDescription' },
         { text: 'Type', value: 'resourceType' },
         { text: 'State', value: 'resourceState' },
+        { text: 'Time until available', value: 'timer' },
         { text: 'Actions', value: 'actions', sortable: false },
         { text: '', value: 'data-table-expand' }
       ],
 
       resources: [
-        { resourceName: "Resource 1", resourceDescription: "Description 1", resourceType: "ROOM", resourceState: "Available"},
-        { resourceName: "Resource 2", resourceDescription: "Description 2", resourceType: "ROOM", resourceState: "Available"},
-        { resourceName: "Resource 3", resourceDescription: "Description 3", resourceType: "ROOM", resourceState: "Available"},
-        { resourceName: "Resource 4", resourceDescription: "Description 4", resourceType: "ROOM", resourceState: "Available"},
-        { resourceName: "Resource 5", resourceDescription: "Description 5", resourceType: "ROOM", resourceState: "Available"},
+        { resourceName: "Resource 1", resourceDescription: "Description 1", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
+        { resourceName: "Resource 2", resourceDescription: "Description 2", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
+        { resourceName: "Resource 3", resourceDescription: "Description 3", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
+        { resourceName: "Resource 4", resourceDescription: "Description 4", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
+        { resourceName: "Resource 5", resourceDescription: "Description 5", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
       ],
+
+      now: Math.trunc((new Date()).getTime() / 1000),
 
       editedIndex: -1,
       editedItem: {
@@ -229,17 +248,45 @@ export default {
         resourceType: '',
         resourceState: ''
       },
+
+      date: ''
     }),
 
     mounted: function() {
       this.username = localStorage.getItem('username');
       this.role = localStorage.getItem("role");
       this.organizationName = localStorage.getItem('organizationName');
+      
+      window.setInterval(() => {
+          this.now = Math.trunc((new Date()).getTime() / 1000);
+      },1000);
+    },
+
+    props: {
+      dateTimer: {
+        type: String
+      }
     },
 
     computed: {
       formTitle () {
         return this.editedIndex === -1 ? 'New Item' : 'Book this resource'
+      },
+
+      dateInMilliseconds() {
+        return Math.trunc(Date.parse(this.date) / 1000)
+      },
+      seconds() {
+        return (this.dateInMilliseconds - this.now) % 60;
+      },
+      minutes() {
+        return Math.trunc((this.dateInMilliseconds - this.now) / 60) % 60;
+      },
+      hours() {
+        return Math.trunc((this.dateInMilliseconds - this.now) / 60 / 60) % 24;
+      },
+      days() {
+        return Math.trunc((this.dateInMilliseconds - this.now) / 60 / 60 / 24);
       }
     },
     
@@ -272,13 +319,23 @@ export default {
       },
       
       book () {
-      }
+      },
+
+
+      getStyle (text) {
+        if (text.includes('devil')) return 'red--text font-weight-bold'
+        else return ''
+      },
+
+      
 
     },
 
     created(){
 
-    }
+    },
+
+    
 }
 </script>
 
