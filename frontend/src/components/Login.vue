@@ -38,7 +38,7 @@
                   <v-row>
                     <v-col cols="12">
                       <v-text-field
-                          v-model="username"
+                          v-model="loginUsername"
                           :rules="[rules.required, rules.min, rules.max]"
                           label="Username"
                           required
@@ -46,7 +46,7 @@
                     </v-col>
                     <v-col cols="12">
                       <v-text-field
-                          v-model="password"
+                          v-model="loginPassword"
                           :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
                           :rules="[rules.required]"
                           :type="show1 ? 'text' : 'password'"
@@ -253,6 +253,14 @@
                           required
                       ></v-text-field>
                     </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                          v-model="organizationDescriptionAdmin"
+                          :rules="[rules.required]"
+                          label="Organization Description"
+                          required
+                      ></v-text-field>
+                    </v-col>
                   </v-row>
                   <v-row>
                     <v-col class="d-flex ml-auto" cols="12" sm="3" xsm="12">
@@ -303,8 +311,8 @@ export default {
       if (this.$refs.loginForm.validate()) {
         axios
             .post(API_PATH + "/login", {
-              username: this.username,
-              password: this.password,
+              username: this.loginUsername,
+              password: this.loginPassword,
             }, {withCredentials: true})
             .then((res) => {
               console.log(res);
@@ -438,6 +446,7 @@ export default {
     passwordAdmin: "",
     password_verifyAdmin: "",
     organizationNameAdmin: "",
+    organizationDescriptionAdmin: "",
 
     show1: false,
     rules: {
