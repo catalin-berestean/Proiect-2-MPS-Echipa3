@@ -382,8 +382,8 @@ export default {
                 passwordConfirm: this.password_verifyAdmin
               },
               organization: {
-                name: this.organizationNameAdmin,
-                //description: this.organizationDescriptionAdmin
+                description: this.organizationDescriptionAdmin,
+                name: this.organizationNameAdmin
               }
             }, {withCredentials: true})
             .then((res) => {

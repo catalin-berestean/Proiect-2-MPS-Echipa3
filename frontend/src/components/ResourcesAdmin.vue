@@ -2,7 +2,6 @@
   <v-data-table
     :headers="headers"
     :items="resources"
-    sort-by="resName"
     class="elevation-1"
   >
     <template v-slot:top>
@@ -35,7 +34,7 @@
                 <v-row justify="center">
                   <v-col>
                     <v-text-field
-                      v-model="editedItem.resName"
+                      v-model="editedItem.name"
                       label="Resource name"
                     ></v-text-field>
                   </v-col>
@@ -43,7 +42,7 @@
                 <v-row justify="center">
                   <v-col>
                     <v-text-field
-                      v-model="editedItem.resDesc"
+                      v-model="editedItem.description"
                       label="Description"
                     ></v-text-field>
                   </v-col>
@@ -51,14 +50,22 @@
                 <v-row justify="center">
                   <v-col>
                     <v-text-field
-                      v-model="editedItem.resType"
+                      v-model="editedItem.type"
                       label="Resource type"
                     ></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
+              <v-alert
+                  dense
+                  v-show="display_error"
+                  type="error"
+                  elevation="4"
+                  dismissible
+              >
+                {{ error_message }}
+              </v-alert>
             </v-card-text>
-
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn
@@ -85,7 +92,7 @@
     <template v-slot:no-data>
       <v-btn
         color="primary"
-        @click="initialize"
+        @click="getResources"
       >
         Reset
       </v-btn>
@@ -101,21 +108,15 @@ export default {
   name: "ResourcesAdmin.vue",
   computed: {
     formTitle () {
-      return this.editedIndex === -1 ? 'New Item' : 'Edit user permissions'
+      return this.editedIndex === -1 ? 'Create new resource' : 'Edit items'
     }
   },
   data: () => ({
     dialog: false,
     dialogDelete: false,
-
-    display_success: false,
     display_error: false,
     error_message: '',
-    success_message: 'Resource was added successfully',
     countSpaces: 3,
-    resourceName: '',
-    resourceDescription: '',
-    resourceType: '',
 
     watch: {
       dialog (val) {
@@ -127,43 +128,49 @@ export default {
     },
 
     headers: [
-      { text: 'Name', value: 'resName', align: 'start', sortable: true },
-      { text: 'Description', value: 'resDesc', sortable: true },
-      { text: 'Type', value: 'resType', sortable: true }
+      { text: 'Name', value: 'name', align: 'start', sortable: true },
+      { text: 'Description', value: 'description', sortable: true },
+      { text: 'Type', value: 'type', sortable: true }
     ],
 
-    resources: [
-      {resName: "resource 1", resDesc: "desc 1", resType: "ROOM"},
-      {resName: "resource 2", resDesc: "desc 2", resType: "ROOM"},
-      {resName: "resource 3", resDesc: "desc 3", resType: "ROOM"},
-      {resName: "resource 4", resDesc: "desc 4", resType: "ROOM"}
-    ],
+    resources: [],
 
     editedIndex: -1,
       editedItem: {
-        resName: '',
-        resDesc: '',
-        resType: '',
+        name: '',
+        description: '',
+        type: '',
       },
       defaultItem: {
-        resName: '',
-        resDesc: '',
-        resType: '',
+        name: '',
+        description: '',
+        type: '',
       },
 
 
   }),
+  mounted() {
+    this.getResources()
+  },
   methods: {
+    getResources() {
+        axios.get(API_PATH + "/resources")
+            .then(response => {
+              this.resources = response.data;
+            })
+    },
     addNewResource() {
       axios
           .post(API_PATH + "/resources", {
-            name: this.resourceName,
-            description: this.resourceDescription,
-            type: this.resourceType
+            name: this.editedItem.name,
+            description: this.editedItem.description,
+            type: this.editedItem.type
           })
           .then((res) => {
             console.log(res);
-            this.display_success = true;
+            this.error_message = false;
+            this.resources = this.getResources();
+            this.close();
           })
           .catch((error) => {
             let msg = error.response.data["message"]
@@ -177,24 +184,25 @@ export default {
     },
 
     editItem (item) {
-      this.editedIndex = this.desserts.indexOf(item)
+      this.editedIndex = this.resources.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
 
     deleteItem (item) {
-      this.editedIndex = this.desserts.indexOf(item)
+      this.editedIndex = this.resources.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialogDelete = true
     },
 
     deleteItemConfirm () {
-      this.desserts.splice(this.editedIndex, 1)
+      this.resources.splice(this.editedIndex, 1)
       this.closeDelete()
     },
 
     close () {
       this.dialog = false
+      this.display_error = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
@@ -210,12 +218,7 @@ export default {
     },
 
     save () {
-      if (this.editedIndex > -1) {
-        Object.assign(this.desserts[this.editedIndex], this.editedItem)
-      } else {
-        this.desserts.push(this.editedItem)
-      }
-      this.close()
+      this.addNewResource();
     },
   }
 }
