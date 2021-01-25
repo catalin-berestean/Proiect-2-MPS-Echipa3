@@ -3,14 +3,14 @@
       <v-card
           class="mx-auto overflow-hidden"
       >
-        <v-app-bar fixed>
-          <v-app-bar-nav-icon></v-app-bar-nav-icon>
-          <v-toolbar-title>Welcome, {{username}}</v-toolbar-title>
+        <v-app-bar fixed color="deep-purple accent-4">
+          <v-app-bar-nav-icon style="color:white;"></v-app-bar-nav-icon>
+          <v-toolbar-title style="color:white;">Welcome, {{username}}</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-toolbar-title>Organization: {{organizationName}}</v-toolbar-title>
+          <v-toolbar-title style="color:white;">Organization: {{organizationName}}</v-toolbar-title>
           <v-menu bottom left>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn icon color="black" v-bind="attrs" v-on="on">
+              <v-btn icon color="white" v-bind="attrs" v-on="on">
                 <v-icon>mdi-dots-vertical</v-icon>
               </v-btn>
             </template>
@@ -55,7 +55,11 @@
                     :headers="headers"
                     :search="search"
                     :items="resources"
-                    sort-by="name"
+                    sort-by="resourceName"
+                    item-key="resourceName"
+                    show-expand
+                    :single-expand="singleExpand"
+                    :expanded.sync="expanded"
                   >
                     <template v-slot:top>
                       <v-text-field
@@ -66,12 +70,6 @@
                       ></v-text-field>
                     </template>
                     <template v-slot:[`item.actions`]="{ item }">
-                      <v-icon
-                          class="mr-2"
-                          @click="showItemInfo(item)"
-                      >
-                        mdi-information-outline
-                      </v-icon>
                       <v-icon v-if= "role === 'EDIT'"
                           @click="bookItem(item)"
                       >
@@ -83,6 +81,11 @@
                       >
                         mdi-calendar-edit
                       </v-icon>
+                    </template>
+                    <template v-slot:expanded-item="{ headers, item }">
+                      <td :colspan="headers.length">
+                        More info about {{ item.name }}
+                      </td>
                     </template>
                     <template v-slot:no-data>
                       <v-btn
@@ -112,6 +115,8 @@ export default {
       search: '',
       dialog: false,
       dialogDelete: false,
+      expanded: [],
+      singleExpand: true,
 
       drawer: false,
       group: null,
@@ -125,7 +130,8 @@ export default {
         { text: 'Description', value: 'resourceDescription' },
         { text: 'Type', value: 'resourceType' },
         { text: 'State', value: 'resourceState' },
-        { text: 'Actions', value: 'actions', sortable: false }
+        { text: 'Actions', value: 'actions', sortable: false },
+        { text: '', value: 'data-table-expand' }
       ],
 
       resources: [
