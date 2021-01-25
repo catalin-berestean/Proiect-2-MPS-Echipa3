@@ -57,9 +57,6 @@
                     :items="resources"
                     sort-by="resourceName"
                     item-key="resourceName"
-                    show-expand
-                    :single-expand="singleExpand"
-                    :expanded.sync="expanded"
                   >
                     <template v-slot:[`item.timer`] = "{ item }">
                       <h2 date='item.timer'>{{item.timer}} {{days}} d {{hours}} h {{minutes}} m {{seconds}} s</h2>
@@ -87,28 +84,12 @@
                             <v-container>
                                   <v-form ref="form">
                                     <v-text-field
-                                        label="Resource description"
-                                        v-model="description">
-                                    ></v-text-field>
-                                    <v-text-field
-                                        v-model="first"
-                                        label="First name"
-                                    ></v-text-field>
-                                    <v-text-field
-                                        v-model="last"
-                                        label="Last name"
-                                    ></v-text-field>
-                                    <v-text-field
                                         v-model="reason"
                                         label="Reason of reserving the resource"
                                     ></v-text-field>
                                     <v-text-field
                                         v-model="time"
                                         label="Estimated reservation time"
-                                    ></v-text-field>
-                                    <v-text-field
-                                        v-model="current_time"
-                                        label="Current reservation time"
                                     ></v-text-field>
                                     <v-checkbox
                                         v-model="notify"
@@ -138,6 +119,35 @@
                           </v-card-actions>
                         </v-card>
                       </v-dialog>
+
+                      <v-dialog v-model="showHistDialog">
+                        <v-card>
+                          <v-card-title>
+                            <span class="headline">Resource Booking History</span>
+                          </v-card-title>
+
+                          <v-card-text>
+                            <v-data-table
+                              :headers="historyHeaders"
+                              :items="historyRows"
+                            >
+                            </v-data-table>
+                          </v-card-text>
+
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                color="blue darken-1"
+                                text
+                                @click="closeHistory"
+                            >
+                              Cancel
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+
+
                     </template>
                     <template v-slot:[`item.actions`]="{ item }">
                       <v-icon v-if= "role === 'EDIT'"
@@ -151,11 +161,12 @@
                       >
                         mdi-calendar-edit
                       </v-icon>
-                    </template>
-                    <template v-slot:expanded-item="{ headers, item }">
-                      <td :colspan="headers.length" date=item.timer>
-                        More info about {{ item.resourceName }}
-                      </td>
+
+                      <v-icon
+                        @click="showHistory(item)"
+                      >
+                        mdi-history
+                      </v-icon>
                     </template>
                     <template v-slot:no-data>
                       <v-btn
@@ -193,17 +204,14 @@ export default {
     },
 
     data: () => ({
-      description: '',
-      first: '',
-      last: '',
       reason: '',
       time: '',
-      current_time: '',
       notify: '',
 
       search: '',
       dialog: false,
       dialogDelete: false,
+      showHistDialog: false,
 
       expanded: [],
       singleExpand: true,
@@ -220,17 +228,29 @@ export default {
         { text: 'Description', value: 'resourceDescription' },
         { text: 'Type', value: 'resourceType' },
         { text: 'State', value: 'resourceState' },
-        { text: 'Time until available', value: 'timer' },
-        { text: 'Actions', value: 'actions', sortable: false },
-        { text: '', value: 'data-table-expand' }
+        { text: 'Actions', value: 'actions', sortable: false }
       ],
 
       resources: [
-        { resourceName: "Resource 1", resourceDescription: "Description 1", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
-        { resourceName: "Resource 2", resourceDescription: "Description 2", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
-        { resourceName: "Resource 3", resourceDescription: "Description 3", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
-        { resourceName: "Resource 4", resourceDescription: "Description 4", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
-        { resourceName: "Resource 5", resourceDescription: "Description 5", resourceType: "ROOM", resourceState: "Available", timer: "2021-01-26 00:00:00"},
+        { resourceName: "Resource 1", resourceDescription: "Description 1", resourceType: "ROOM", resourceState: "Available"},
+        { resourceName: "Resource 2", resourceDescription: "Description 2", resourceType: "ROOM", resourceState: "Available"},
+        { resourceName: "Resource 3", resourceDescription: "Description 3", resourceType: "ROOM", resourceState: "Available"},
+        { resourceName: "Resource 4", resourceDescription: "Description 4", resourceType: "ROOM", resourceState: "Available"},
+        { resourceName: "Resource 5", resourceDescription: "Description 5", resourceType: "ROOM", resourceState: "Available"},
+      ],
+
+
+      historyHeaders: [
+        {text: 'First name', value: 'firstName', sortable: true},
+        {text: 'Last name', value: 'lastName', sortable: true},
+        {text: 'Booked at', value: 'fromBookingTime', sortable: true},
+        {text: 'Booked by', value: 'toBookingTime', sortable: true}
+      ],
+      historyRows: [
+        {firstName: 'Andrei', lastName: 'Popescu', fromBookingTime: "B", toBookingTime: 'C'},
+        {firstName: 'Andrei', lastName: 'Popescu', fromBookingTime: "B", toBookingTime: 'C'},
+        {firstName: 'Andrei', lastName: 'Popescu', fromBookingTime: "B", toBookingTime: 'C'},
+        {firstName: 'Andrei', lastName: 'Popescu', fromBookingTime: "B", toBookingTime: 'C'},
       ],
 
       now: Math.trunc((new Date()).getTime() / 1000),
@@ -319,13 +339,19 @@ export default {
       },
       
       book () {
+        // here will send data to backend
       },
 
-
-      getStyle (text) {
-        if (text.includes('devil')) return 'red--text font-weight-bold'
-        else return ''
+      showHistory(item) {
+        console.log(item);
+        //this.editedIndex = this.resources.indexOf(item)
+        //this.editedItem = Object.assign({}, item)
+        this.showHistDialog = true;
       },
+
+      closeHistory(){
+        this.showHistDialog = false;
+      }
 
       
 
