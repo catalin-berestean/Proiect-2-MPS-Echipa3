@@ -51,7 +51,48 @@
             </div>
             <div v-else>
                 <v-card>
-                    <h1>User normal</h1>
+                  <v-data-table
+                    :headers="headers"
+                    :search="search"
+                    :items="resources"
+                    sort-by="name"
+                  >
+                    <template v-slot:top>
+                      <v-text-field
+                        v-model="search"
+                        append-icon="mdi-magnify"
+                        label="Search"
+                        class="mx-10"
+                      ></v-text-field>
+                    </template>
+                    <template v-slot:[`item.actions`]="{ item }">
+                      <v-icon
+                          class="mr-2"
+                          @click="showItemInfo(item)"
+                      >
+                        mdi-information-outline
+                      </v-icon>
+                      <v-icon v-if= "role === 'EDIT'"
+                          @click="bookItem(item)"
+                      >
+                        mdi-calendar-edit
+                      </v-icon>
+                      <v-icon v-else
+                          @click="bookItem(item)"
+                          disabled
+                      >
+                        mdi-calendar-edit
+                      </v-icon>
+                    </template>
+                    <template v-slot:no-data>
+                      <v-btn
+                          color="primary"
+                          @click="getUsers"
+                      >
+                        Reset
+                      </v-btn>
+                    </template>
+                  </v-data-table>
                 </v-card>
             </div>
         </v-card-text>
@@ -68,12 +109,32 @@ export default {
       Users
     },
     data: () => ({
-        drawer: false,
-        group: null,
-        countSpaces: 2,
-        username: '',
-        role: '',
-        organizationName: ''
+      search: '',
+      dialog: false,
+      dialogDelete: false,
+
+      drawer: false,
+      group: null,
+      countSpaces: 2,
+      username: '',
+      role: '',
+      organizationName: '',
+
+      headers: [
+        { text: 'Resource name', value: 'resourceName', align: 'start', sortable: true },
+        { text: 'Description', value: 'resourceDescription' },
+        { text: 'Type', value: 'resourceType' },
+        { text: 'State', value: 'resourceState' },
+        { text: 'Actions', value: 'actions', sortable: false }
+      ],
+
+      resources: [
+        { resourceName: "Resource 1", resourceDescription: "Description 1", resourceType: "ROOM", resourceState: "Available"},
+        { resourceName: "Resource 2", resourceDescription: "Description 2", resourceType: "ROOM", resourceState: "Available"},
+        { resourceName: "Resource 3", resourceDescription: "Description 3", resourceType: "ROOM", resourceState: "Available"},
+        { resourceName: "Resource 4", resourceDescription: "Description 4", resourceType: "ROOM", resourceState: "Available"},
+        { resourceName: "Resource 5", resourceDescription: "Description 5", resourceType: "ROOM", resourceState: "Available"},
+      ],
     }),
 
     mounted: function() {

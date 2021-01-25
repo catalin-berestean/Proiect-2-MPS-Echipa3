@@ -76,19 +76,18 @@
       <v-text-field
           v-model="search"
           label="Search"
+          append-icon="mdi-magnify"
           class="mx-10"
       ></v-text-field>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
       <v-icon
-          small
           class="mr-2"
           @click="editItem(item)"
       >
         mdi-pencil
       </v-icon>
       <v-icon
-          small
           @click="deleteItem(item)"
       >
         mdi-delete
