@@ -42,10 +42,10 @@
                     v-model="reason"
                     label="Reason of reserving the resource"
                 ></v-text-field>
-                <v-text-field
-                    v-model="estimated_time"
-                    label="Estimated reservation time"
-                ></v-text-field>
+                <v-datetime-picker
+                    label="Estimated time"
+                    v-model="datetime"
+                > </v-datetime-picker>
                 <v-checkbox
                     v-model="notify"
                     label="Keep me notified"
@@ -146,8 +146,10 @@
 <script>
 import axios from "axios";
 import moment from 'moment';
-
+import Vue from 'vue'
+import DatetimePicker from 'vuetify-datetime-picker'
 const API_PATH = "http://localhost:8081/api";
+Vue.use(DatetimePicker)
 
 export default {
   name: "ResourcesUser.vue",
@@ -165,7 +167,7 @@ export default {
   data: () => ({
     role: '',
     reason: '',
-    estimated_time: '',
+    datetime: '',
     notify: '',
     display_error: false,
     error_message: '',
