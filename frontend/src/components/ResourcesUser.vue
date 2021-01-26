@@ -13,11 +13,6 @@
       </v-chip>
     </template>
 
-    <template v-slot:[`item.timer`] = "{ item }">
-      <h4 date='item.timer'>{{item.timer}} {{days}} d {{hours}} h {{minutes}} m {{seconds}} s</h4>
-    </template>
-
-
     <template v-slot:top>
       <v-text-field
           v-model="search"
@@ -146,6 +141,7 @@
 <script>
 import axios from "axios";
 import moment from 'moment';
+
 const API_PATH = "http://localhost:8081/api";
 
 export default {
@@ -201,7 +197,7 @@ export default {
       { text: 'Description', value: 'description', sortable: true },
       { text: 'Type', value: 'type', align: 'center', sortable: true},
       { text: 'State', value: 'state', align: 'center', sortable: true},
-      { text: 'Time left', value: 'timer', align: 'center', sortable: false },
+      { text: 'Time left', value: 'estimatedTimeBooking', align: 'center', sortable: false },
       { text: 'Actions', value: 'actions', align: 'center', sortable: false }
     ],
 
@@ -226,22 +222,6 @@ export default {
     formTitle () {
       return this.editedIndex === -1 ? 'New Item' : 'Book this resource'
     },
-
-    dateInMilliseconds() {
-      return Math.trunc(Date.parse(this.date) / 1000)
-    },
-    seconds() {
-      return (this.dateInMilliseconds - this.now) % 60;
-    },
-    minutes() {
-      return Math.trunc((this.dateInMilliseconds - this.now) / 60) % 60;
-    },
-    hours() {
-      return Math.trunc((this.dateInMilliseconds - this.now) / 60 / 60) % 24;
-    },
-    days() {
-      return Math.trunc((this.dateInMilliseconds - this.now) / 60 / 60 / 24);
-    }
   },
   watch: {
     dialog (val) {
@@ -255,15 +235,40 @@ export default {
     this.role = localStorage.getItem("role");
     this.getResources();
     window.setInterval(() => {
-      this.now = Math.trunc((new Date()).getTime() / 1000);
+      this.getResources();
     },1000);
   },
 
   methods: {
+    minutes(x) {
+      return Math.trunc(x / 1000 / 60) % 60;
+    },
+    dateInMilliseconds() {
+      return Math.trunc(Date.parse(this.date) / 1000)
+    },
+    seconds(x) {
+      return Math.trunc((x / 1000)) % 60;
+    },
+    hours(x) {
+      return Math.trunc(x / 1000 / 60 / 60) % 24;
+    },
+    days(x) {
+      return Math.trunc(x / 1000 / 60 / 60 / 24);
+    },
+    convert(date) {
+      let newDate = new Date(date) - new Date().getTime();
+      return this.days(newDate) + 'd ' + this.hours(newDate) + 'h ' + this.minutes(newDate) + 'm ' + this.seconds(newDate) + 's ';
+    },
     getResources() {
       axios.get(API_PATH + "/resources")
           .then(response => {
             this.resources = response.data;
+            this.resources.map(r => {
+              if(r.estimatedTimeBooking) {
+                r.estimatedTimeBooking = this.convert(r.estimatedTimeBooking);
+                return r;
+              }
+            })
           })
     },
     getColor(state) {
@@ -289,7 +294,7 @@ export default {
     },
     format_date(value) {
       if(value) {
-        return moment(String(value)).format("MM/DD/YYYY hh:mm");
+        return moment(String(value)).format("MM/DD/YYYY hh:mm A");
       }
     },
     book () {
