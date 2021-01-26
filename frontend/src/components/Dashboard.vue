@@ -85,6 +85,8 @@ export default {
 
     methods: {
       logout() {
+        for (let i = 1; i < 99999; i++)
+          window.clearInterval(i);
         axios.get(API_PATH + "/me/logout",{withCredentials:true})
         localStorage.clear();
         sessionStorage.clear();

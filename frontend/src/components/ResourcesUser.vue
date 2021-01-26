@@ -41,10 +41,6 @@
                     label="Estimated time"
                     v-model="datetime"
                 > </v-datetime-picker>
-                <v-checkbox
-                    v-model="notify"
-                    label="Keep me notified"
-                ></v-checkbox>
                 <v-alert
                     dense
                     v-show="display_error"
@@ -78,6 +74,52 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+      <v-dialog
+          v-model="display_notify"
+          max-width="500px"
+      >
+
+        <v-card>
+          <v-card-title>
+            <span class="headline">Get notifications about this resource</span>
+          </v-card-title>
+
+          <v-card-text>
+            <v-container>
+              <v-checkbox
+                  v-model="notify"
+                  label="Keep me notified"
+              ></v-checkbox>
+            </v-container>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+                color="blue darken-1"
+                text
+                @click="close"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+                color="blue darken-1"
+                text
+                @click="close"
+            >
+              Ok
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+
+
+
+
+
+
 
       <v-dialog v-model="showHistDialog">
         <v-card>
@@ -126,6 +168,11 @@
       >
         mdi-history
       </v-icon>
+      <v-icon v-if= "item.state === 'BOOKED'"
+              @click="notifyItem(item)"
+      >
+        mdi-message-text-outline
+      </v-icon>
     </template>
     <template v-slot:no-data>
       <v-btn
@@ -163,6 +210,7 @@ export default {
     datetime: '',
     notify: '',
     display_error: false,
+    display_notify: false,
     error_message: '',
 
     search: '',
@@ -191,6 +239,8 @@ export default {
       type: '',
       state: '',
     },
+
+    intervalId: '',
 
     headers: [
       { text: 'Resource name', value: 'name', align: 'start', sortable: true},
@@ -232,9 +282,9 @@ export default {
     },
   },
   mounted: function() {
-    this.role = localStorage.getItem("role");
     this.getResources();
-    window.setInterval(() => {
+    this.role = localStorage.getItem("role");
+    this.intervalId = window.setInterval(() => {
       this.getResources();
     },1000);
   },
@@ -284,9 +334,16 @@ export default {
       this.dialog = true
     },
 
+    notifyItem(item) {
+      this.editedIndex = this.resources.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.display_notify = true
+    },
+
     close () {
       this.dialog = false;
       this.display_error = false;
+      this.display_notify = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
