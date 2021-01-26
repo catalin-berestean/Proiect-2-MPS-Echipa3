@@ -146,10 +146,7 @@
 <script>
 import axios from "axios";
 import moment from 'moment';
-import Vue from 'vue'
-import DatetimePicker from 'vuetify-datetime-picker'
 const API_PATH = "http://localhost:8081/api";
-Vue.use(DatetimePicker)
 
 export default {
   name: "ResourcesUser.vue",
