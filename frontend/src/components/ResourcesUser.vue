@@ -199,8 +199,6 @@ export default {
       state: '',
     },
 
-    date: '',
-
     headers: [
       { text: 'Resource name', value: 'name', align: 'start', sortable: true},
       { text: 'Description', value: 'description', sortable: true },
@@ -300,7 +298,7 @@ export default {
     book () {
       axios
           .put(API_PATH + "/resources/book/" + this.editedItem.id, {
-            estimatedTimeBooking: this.estimated_time,
+            estimatedTimeBooking: this.datetime,
             bookingReason: this.reason,
           })
           .then((res) => {

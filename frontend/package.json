@@ -14,7 +14,8 @@
     "moment": "^2.29.1",
     "vue": "^2.6.12",
     "vue-router": "^3.4.9",
-    "vuetify": "^2.4.2"
+    "vuetify": "^2.4.2",
+    "vuetify-datetime-picker": "^2.1.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
