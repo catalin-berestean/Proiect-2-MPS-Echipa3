@@ -3,8 +3,7 @@
       :headers="headers"
       :search="search"
       :items="resources"
-      sort-by="resourceName"
-      item-key="resourceName"
+      item-key="name"
   >
     <template v-slot:[`item.timer`] = "{ item }">
       <h2 date='item.timer'>{{item.timer}} {{days}} d {{hours}} h {{minutes}} m {{seconds}} s</h2>
@@ -119,7 +118,7 @@
     <template v-slot:no-data>
       <v-btn
           color="primary"
-          @click="getUsers"
+          @click="getResources()"
       >
         Reset
       </v-btn>
@@ -128,6 +127,9 @@
 </template>
 
 <script>
+import axios from "axios";
+const API_PATH = "http://localhost:8081/api";
+
 export default {
   name: "ResourcesUser.vue",
 
@@ -161,36 +163,29 @@ export default {
 
     editedIndex: -1,
     editedItem: {
-      resourceName: '',
-      resourceDescription: '',
-      resourceType: '',
-      resourceState: ''
+      name: '',
+      description: '',
+      type: '',
+      state: ''
     },
     defaultItem: {
-      resourceName: '',
-      resourceDescription: '',
-      resourceType: '',
-      resourceState: ''
+      name: '',
+      description: '',
+      type: '',
+      state: ''
     },
 
     date: '',
 
     headers: [
-      { text: 'Resource name', value: 'resourceName', align: 'start', sortable: true },
-      { text: 'Description', value: 'resourceDescription' },
-      { text: 'Type', value: 'resourceType' },
-      { text: 'State', value: 'resourceState' },
+      { text: 'Resource name', value: 'name', align: 'start', sortable: true },
+      { text: 'Description', value: 'description', sortable: true },
+      { text: 'Type', value: 'type', sortable: true},
+      { text: 'State', value: 'state', sortable: true},
       { text: 'Actions', value: 'actions', sortable: false }
     ],
 
-    resources: [
-      { resourceName: "Resource 1", resourceDescription: "Description 1", resourceType: "ROOM", resourceState: "Available"},
-      { resourceName: "Resource 2", resourceDescription: "Description 2", resourceType: "ROOM", resourceState: "Available"},
-      { resourceName: "Resource 3", resourceDescription: "Description 3", resourceType: "ROOM", resourceState: "Available"},
-      { resourceName: "Resource 4", resourceDescription: "Description 4", resourceType: "ROOM", resourceState: "Available"},
-      { resourceName: "Resource 5", resourceDescription: "Description 5", resourceType: "ROOM", resourceState: "Available"},
-    ],
-
+    resources: [],
 
     historyHeaders: [
       {text: 'First name', value: 'firstName', sortable: true},
@@ -240,12 +235,20 @@ export default {
     },
   },
   mounted: function() {
+    this.getResources();
     window.setInterval(() => {
       this.now = Math.trunc((new Date()).getTime() / 1000);
     },1000);
   },
 
   methods: {
+    getResources() {
+      axios.get(API_PATH + "/resources")
+          .then(response => {
+            this.resources = response.data;
+          })
+    },
+
     bookItem(item) {
       this.editedIndex = this.resources.indexOf(item)
       this.editedItem = Object.assign({}, item)
@@ -265,8 +268,6 @@ export default {
 
     showHistory(item) {
       console.log(item);
-      //this.editedIndex = this.resources.indexOf(item)
-      //this.editedItem = Object.assign({}, item)
       this.showHistDialog = true;
     },
 

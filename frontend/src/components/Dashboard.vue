@@ -60,7 +60,9 @@
 import ResourcesAdmin from "@/components/ResourcesAdmin.vue";
 import Users from "@/components/Users";
 import ResourcesUser from "@/components/ResourcesUser";
+import axios from "axios";
 
+const API_PATH = "http://localhost:8081/api";
 export default {
     name: 'Dashboard',
     components: {
@@ -83,6 +85,9 @@ export default {
 
     methods: {
       logout() {
+        axios.get(API_PATH + "/me/logout",{withCredentials:true})
+        localStorage.clear();
+        sessionStorage.clear();
         this.$router.push({ name: 'Login' });
       },
     },
