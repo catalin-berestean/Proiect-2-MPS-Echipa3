@@ -3,10 +3,18 @@
       :headers="headers"
       :search="search"
       :items="resources"
-      item-key="name"
   >
+    <template v-slot:[`item.state`]="{ item }">
+      <v-chip
+          :color="getColor(item.state)"
+          dark
+      >
+        {{ item.state }}
+      </v-chip>
+    </template>
+
     <template v-slot:[`item.timer`] = "{ item }">
-      <h2 date='item.timer'>{{item.timer}} {{days}} d {{hours}} h {{minutes}} m {{seconds}} s</h2>
+      <h4 date='item.timer'>{{item.timer}} {{days}} d {{hours}} h {{minutes}} m {{seconds}} s</h4>
     </template>
 
 
@@ -35,13 +43,22 @@
                     label="Reason of reserving the resource"
                 ></v-text-field>
                 <v-text-field
-                    v-model="time"
+                    v-model="estimated_time"
                     label="Estimated reservation time"
                 ></v-text-field>
                 <v-checkbox
                     v-model="notify"
                     label="Keep me notified"
                 ></v-checkbox>
+                <v-alert
+                    dense
+                    v-show="display_error"
+                    type="error"
+                    elevation="4"
+                    dismissible
+                >
+                  {{ error_message }}
+                </v-alert>
               </v-form>
 
             </v-container>
@@ -97,7 +114,7 @@
 
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-icon v-if= "role === 'EDIT'"
+      <v-icon v-if= "role === 'EDIT' && item.state === 'AVAILABLE'"
               @click="bookItem(item)"
       >
         mdi-calendar-edit
@@ -128,6 +145,8 @@
 
 <script>
 import axios from "axios";
+import moment from 'moment';
+
 const API_PATH = "http://localhost:8081/api";
 
 export default {
@@ -146,8 +165,10 @@ export default {
   data: () => ({
     role: '',
     reason: '',
-    time: '',
+    estimated_time: '',
     notify: '',
+    display_error: false,
+    error_message: '',
 
     search: '',
     dialog: false,
@@ -164,42 +185,39 @@ export default {
 
     editedIndex: -1,
     editedItem: {
-      name: '',
+      id: '',
       description: '',
       type: '',
-      state: ''
+      state: '',
     },
     defaultItem: {
-      name: '',
+      id: '',
       description: '',
       type: '',
-      state: ''
+      state: '',
     },
 
     date: '',
 
     headers: [
-      { text: 'Resource name', value: 'name', align: 'start', sortable: true },
+      { text: 'Resource name', value: 'name', align: 'start', sortable: true},
       { text: 'Description', value: 'description', sortable: true },
-      { text: 'Type', value: 'type', sortable: true},
-      { text: 'State', value: 'state', sortable: true},
-      { text: 'Actions', value: 'actions', sortable: false }
+      { text: 'Type', value: 'type', align: 'center', sortable: true},
+      { text: 'State', value: 'state', align: 'center', sortable: true},
+      { text: 'Time left', value: 'timer', align: 'center', sortable: false },
+      { text: 'Actions', value: 'actions', align: 'center', sortable: false }
     ],
 
     resources: [],
 
     historyHeaders: [
-      {text: 'First name', value: 'firstName', sortable: true},
-      {text: 'Last name', value: 'lastName', sortable: true},
-      {text: 'Booked at', value: 'fromBookingTime', sortable: true},
-      {text: 'Booked by', value: 'toBookingTime', sortable: true}
+      {text: 'username', value: 'user.username', sortable: true},
+      {text: 'First name', value: 'user.firstName', sortable: true},
+      {text: 'Last name', value: 'user.lastName', sortable: true},
+      {text: 'Booked at', value: 'fromBookingTime', align: 'center', sortable: true},
+      {text: 'Booked until', value: 'toBookingTime', align: 'center', sortable: true}
     ],
-    historyRows: [
-      {firstName: 'Andrei', lastName: 'Popescu', fromBookingTime: "B", toBookingTime: 'C'},
-      {firstName: 'Andrei', lastName: 'Popescu', fromBookingTime: "B", toBookingTime: 'C'},
-      {firstName: 'Andrei', lastName: 'Popescu', fromBookingTime: "B", toBookingTime: 'C'},
-      {firstName: 'Andrei', lastName: 'Popescu', fromBookingTime: "B", toBookingTime: 'C'},
-    ],
+    historyRows: []
   }),
   props: {
     dateTimer: {
@@ -250,6 +268,12 @@ export default {
             this.resources = response.data;
           })
     },
+    getColor(state) {
+      if(state === 'AVAILABLE') {
+        return 'green'
+      }
+      return 'red';
+    },
 
     bookItem(item) {
       this.editedIndex = this.resources.indexOf(item)
@@ -258,19 +282,57 @@ export default {
     },
 
     close () {
-      this.dialog = false
+      this.dialog = false;
+      this.display_error = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
       })
     },
+    format_date(value) {
+      if(value) {
+        return moment(String(value)).format("MM/DD/YYYY hh:mm");
+      }
+    },
     book () {
-      // here will send data to backend
+      axios
+          .put(API_PATH + "/resources/book/" + this.editedItem.id, {
+            estimatedTimeBooking: this.estimated_time,
+            bookingReason: this.reason,
+          })
+          .then((res) => {
+            console.log(res);
+            this.error_message = false;
+            this.resources = this.getResources();
+            this.close();
+          })
+          .catch((error) => {
+            let msg = error.response.data["message"]
+            if(!msg) {
+              this.error_message = "Error processing the request";
+            } else {
+              this.error_message = msg;
+            }
+            this.display_error = true;
+          });
+    },
+
+    getHistory(item) {
+      axios.get(API_PATH + "/resources/" + item.id + "/history")
+          .then(response => {
+            this.historyRows = response.data;
+            this.historyRows.map(row => {
+              row.fromBookingTime = this.format_date(row.fromBookingTime);
+              row.toBookingTime = this.format_date(row.toBookingTime);
+              return row;
+            })
+          })
     },
 
     showHistory(item) {
       console.log(item);
       this.showHistDialog = true;
+      this.getHistory(item)
     },
 
     closeHistory(){
