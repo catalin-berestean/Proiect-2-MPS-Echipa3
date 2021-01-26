@@ -144,6 +144,7 @@ export default {
   },
 
   data: () => ({
+    role: '',
     reason: '',
     time: '',
     notify: '',
@@ -235,6 +236,7 @@ export default {
     },
   },
   mounted: function() {
+    this.role = localStorage.getItem("role");
     this.getResources();
     window.setInterval(() => {
       this.now = Math.trunc((new Date()).getTime() / 1000);
