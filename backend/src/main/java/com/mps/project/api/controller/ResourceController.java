@@ -104,6 +104,7 @@ public class ResourceController {
         resourceBookingHistory.setResource(resourceDb.get());
         resourceBookingHistory.setToBookingTime(resource.getEstimatedTimeBooking());
         resourceBookingHistory.setUser(resourceDb.get().getUser());
+        resourceBookingHistory.setBookingReason(resourceDb.get().getBookingReason());
         resourceBookingHistoryRepository.save(resourceBookingHistory);
 
         updatedResource.getUser().setPassword(null);

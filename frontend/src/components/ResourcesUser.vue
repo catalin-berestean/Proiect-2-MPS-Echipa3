@@ -214,6 +214,7 @@ export default {
       {text: 'username', value: 'user.username', sortable: true},
       {text: 'First name', value: 'user.firstName', sortable: true},
       {text: 'Last name', value: 'user.lastName', sortable: true},
+      {text: 'Booking reason', value: 'bookingReason', sortable: false},
       {text: 'Booked at', value: 'fromBookingTime', align: 'center', sortable: true},
       {text: 'Booked until', value: 'toBookingTime', align: 'center', sortable: true}
     ],

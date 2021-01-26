@@ -34,6 +34,17 @@ public class ResourceBookingHistory {
     @NotNull
     private LocalDateTime toBookingTime;
 
+    @NotNull
+    private String bookingReason;
+
+    public String getBookingReason() {
+        return bookingReason;
+    }
+
+    public void setBookingReason(String bookingReason) {
+        this.bookingReason = bookingReason;
+    }
+
     public Resource getResource() {
         return resource;
     }
